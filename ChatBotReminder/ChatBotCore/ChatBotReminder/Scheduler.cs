@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace ChatBotReminder
@@ -17,7 +18,7 @@ namespace ChatBotReminder
         private static object syncTimedEvent = new Object();
 
         // Промежуток нахождения планировщика в гибернации (интервал работы)
-        private static readonly TimeSpan _timeSpan = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan _timeSpan = ServiceParameters._schedulerTimeSpan;
 
         public static Scheduler Instance
         {
@@ -62,7 +63,6 @@ namespace ChatBotReminder
             timer.Enabled = true;
         }
 
-
         /// <summary>
         /// Основной процесс планировщика
         /// </summary>
@@ -86,11 +86,11 @@ namespace ChatBotReminder
 
         public void DoJob()
         {
-            //if (IsActivity)
-            //{
-            //    Console.WriteLine($"IsActivity = {IsActivity}");
-            //    return;
-            //}
+            if (IsActivity)
+            {
+                Console.WriteLine($"IsActivity = {IsActivity}");
+                return;
+            }
 
             if (Monitor.TryEnter(syncTimedEvent))
             {
@@ -100,6 +100,10 @@ namespace ChatBotReminder
                     ActivityCounter++;
                     Stopwatch stopWatch = new Stopwatch();
                     stopWatch.Start();
+
+
+                    CreateTaskHandler(ReminderItemHashSet.GetReminderSet());
+
 
                     Console.WriteLine($"ActivityCounter = {ActivityCounter}, LastActivityTime = {LastActivityTime}");
                     Console.WriteLine();
@@ -119,7 +123,14 @@ namespace ChatBotReminder
             } 
         }
 
+        public async void CreateTaskHandler(SortedSet<ReminderItem> reminderItems)
+        {
+            TaskHandler taskHandler = new TaskHandler(reminderItems);
+            await Task.Run(taskHandler.ProcessReminders);
 
+            //Thread newThread = new Thread(taskHandler.ProcessReminders);
+            //newThread.Start();
+        }
 
     }
 }
