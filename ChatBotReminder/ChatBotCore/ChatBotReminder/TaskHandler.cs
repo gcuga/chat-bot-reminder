@@ -25,11 +25,15 @@ namespace ChatBotReminder
                     do
                     {
                         DateTimeOffset processingDateWithAccuracy = DateTimeOffset.Now - ServiceParameters._taskHandlerTimeAccuracy;
-                        if (currentNextReminderDateNotNull < processingDateWithAccuracy)
+
+                        Console.WriteLine($"currentNextReminderDate = {currentNextReminderDate}\t"+
+                            $"processingDateWithAccuracy = {processingDateWithAccuracy}\t" +
+                            $"{processingDateWithAccuracy < currentNextReminderDateNotNull}");
+
+                        if (processingDateWithAccuracy < currentNextReminderDateNotNull)
                         {
-                            Console.WriteLine($"sleep {processingDateWithAccuracy - currentNextReminderDateNotNull}");
-                            Console.WriteLine($"{processingDateWithAccuracy} {currentNextReminderDateNotNull}");
-                            Thread.Sleep(processingDateWithAccuracy - currentNextReminderDateNotNull);
+                            Console.WriteLine($"sleep {currentNextReminderDateNotNull - processingDateWithAccuracy}");
+                            Thread.Sleep(currentNextReminderDateNotNull - processingDateWithAccuracy);
                             continue;
                         }
                         break;
@@ -53,13 +57,15 @@ namespace ChatBotReminder
                     }
                 }
             }
+
         }
 
         private bool SendMessage(ReminderItem item)
         {
             // вызов отправщика сообщений
-            Console.WriteLine($"Send remainder {item.Id} {item.GetCategoryName()} {item.Message}" +
-                $" {item.FrequencyType} current NextReminderDate {item.NextReminderDate} date goal {item.DateGoal}");
+            Console.WriteLine($"Send remainder {item.Id}\t {item.GetCategoryName()}\t {item.Message}" +
+                $" \t{item.FrequencyType} \tcurrent NextReminderDate = {item.NextReminderDate}\t date goal {item.DateGoal}");
+            Console.WriteLine();
             return true;
         }
     }

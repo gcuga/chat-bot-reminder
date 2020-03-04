@@ -26,7 +26,7 @@ namespace ChatBotReminder
                                            isActive: true,
                                            frequencyType: FrequencyTypes.None,
                                            dateBegin: null,
-                                           dateGoal: DateTimeOffset.Now.AddSeconds(120),
+                                           dateGoal: DateTimeOffset.Now.AddSeconds(70),
                                            message: "Митап",
                                            creationDate: DateTimeOffset.Now,
                                            nextReminderDate: null,
@@ -50,7 +50,7 @@ namespace ChatBotReminder
                                            isActive: true,
                                            frequencyType: FrequencyTypes.None,
                                            dateBegin: null,
-                                           dateGoal: DateTimeOffset.Now.AddSeconds(180),
+                                           dateGoal: DateTimeOffset.Now.AddSeconds(90),
                                            message: "Кинотеатр",
                                            creationDate: DateTimeOffset.Now,
                                            nextReminderDate: null,
@@ -65,7 +65,7 @@ namespace ChatBotReminder
                                                isActive: true,
                                                frequencyType: FrequencyTypes.None,
                                                dateBegin: null,
-                                               dateGoal: DateTimeOffset.Now.AddSeconds(random.Next(5, 200)),
+                                               dateGoal: DateTimeOffset.Now.AddSeconds(random.Next(1, 60)),
                                                message: $"random {+i}",
                                                creationDate: DateTimeOffset.Now,
                                                nextReminderDate: null,
@@ -75,7 +75,7 @@ namespace ChatBotReminder
 
             foreach (var item in Reminders)
             {
-                if (item.Id == 60 || item.Id == 120)
+                if (item.Id == 60 || item.Id == 40)
                 {
                     continue;
                 }
@@ -87,15 +87,44 @@ namespace ChatBotReminder
                     item.DateGoal,
                     DateTimeOffset.Now);
             }
+
+            foreach (var item in Reminders)
+            {
+                Console.WriteLine($"{item.Id}\t{item.Message}" +
+                    $"\tcurrent NextReminderDate {item.NextReminderDate}\tdate goal {item.DateGoal}");
+
+            }
+
         }
 
         public static SortedSet<ReminderItem> GetReminderSet()
         {
-            SortedSet<ReminderItem> reminderItems = new SortedSet<ReminderItem>(Reminders);
+            Console.WriteLine();
+            Console.WriteLine("GetReminderSet");
+
+            SortedSet<ReminderItem> reminderItems = new SortedSet<ReminderItem>();
+            DateTimeOffset now = DateTimeOffset.Now;
+
+            // имитируем выборку поподающих в список обработки напоминаний
+            foreach (var item in Reminders)
+            {
+                if (item.IsProcessing == true)
+                {
+                    continue;
+                }
+
+                if (item.NextReminderDate == null || item.NextReminderDate <=  (now + ServiceParameters._taskHandlerTimeScope))
+                {
+                    item.IsProcessing = true;
+                    reminderItems.Add(item);
+                }
+            }
+
+
             foreach (var item in reminderItems)
             {
-                Console.WriteLine($"{item.Id} {item.Message}" +
-                    $" current NextReminderDate {item.NextReminderDate} date goal {item.DateGoal}");
+                Console.WriteLine($"{item.Id}\t {item.Message}" +
+                    $"\t current NextReminderDate {item.NextReminderDate}\t date goal {item.DateGoal}");
             }
             Console.WriteLine();
 
