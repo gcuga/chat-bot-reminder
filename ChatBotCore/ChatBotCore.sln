@@ -3,13 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatBotReminder", "ChatBotReminder\ChatBotReminder.csproj", "{24EF14CC-DDBA-4918-AB48-3F91218FC1B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainApp", "ChatBotReminder\DomainApp.csproj", "{24EF14CC-DDBA-4918-AB48-3F91218FC1B3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reminder.Storage.Core", "Reminder.Storage.Core\Reminder.Storage.Core.csproj", "{0135EA51-A781-4EAD-898B-6F72E27C5C0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Storage.Entity", "Reminder.Storage.Entity\Reminder.Storage.Entity.csproj", "{C8AED305-FF55-43D0-A3E8-00A140637906}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reminder.Storage.Entity", "Reminder.Storage.Entity\Reminder.Storage.Entity.csproj", "{C8AED305-FF55-43D0-A3E8-00A140637906}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Storage.InMemory", "Reminder.Storage.InMemory\Reminder.Storage.InMemory.csproj", "{929157CB-1D11-4CFF-9003-9A36AE8EA461}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reminder.Storage.InMemory", "Reminder.Storage.InMemory\Reminder.Storage.InMemory.csproj", "{929157CB-1D11-4CFF-9003-9A36AE8EA461}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Scheduler", "Reminder.Scheduler\Reminder.Scheduler.csproj", "{C9C86C1E-79E6-4F0A-A811-33C1721431D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Parameters", "Reminder.Parameters\Reminder.Parameters.csproj", "{1B2A0A4B-2431-48A5-A794-A24CBBD1DF96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{929157CB-1D11-4CFF-9003-9A36AE8EA461}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{929157CB-1D11-4CFF-9003-9A36AE8EA461}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{929157CB-1D11-4CFF-9003-9A36AE8EA461}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9C86C1E-79E6-4F0A-A811-33C1721431D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9C86C1E-79E6-4F0A-A811-33C1721431D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9C86C1E-79E6-4F0A-A811-33C1721431D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9C86C1E-79E6-4F0A-A811-33C1721431D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B2A0A4B-2431-48A5-A794-A24CBBD1DF96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B2A0A4B-2431-48A5-A794-A24CBBD1DF96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B2A0A4B-2431-48A5-A794-A24CBBD1DF96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B2A0A4B-2431-48A5-A794-A24CBBD1DF96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

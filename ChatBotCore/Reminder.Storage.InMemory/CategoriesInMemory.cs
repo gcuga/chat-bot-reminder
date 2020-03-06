@@ -1,11 +1,10 @@
 ﻿using System;
-using Reminder.Storage.Core;
 using Reminder.Storage.Entity;
 
 
 namespace Reminder.Storage.InMemory
 {
-    public sealed class CategoriesInMemory : StorageInMemoryBase, ICruStorage<Category>
+    public sealed class CategoriesInMemory : StorageInMemoryBase<Category>
     {
         private static volatile CategoriesInMemory _instance;
         private static object syncRoot = new Object();
@@ -31,31 +30,9 @@ namespace Reminder.Storage.InMemory
         {
         }
 
-        public new Category Get(long id)
+        protected override long GetIdFromItem(Category item)
         {
-            return (Category)base.Get(id);
-        }
-
-        public bool TryGet(long id, out Category item)
-        {
-            bool isSuccessful = base.TryGet(id, out EntityBase entity);
-            item = (Category)entity;
-            return isSuccessful;
-        }
-
-        public void Insert(Category item)
-        {
-            base.Insert(item);
-        }
-
-        public void Update(Category item)
-        {
-            base.Update(item);
-        }
-
-        public void Upsert(Category item)
-        {
-            base.Upsert(item);
+            return item.Id;
         }
     }
 }

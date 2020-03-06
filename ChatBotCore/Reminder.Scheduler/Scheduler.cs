@@ -1,12 +1,12 @@
 ﻿using System;
+using Reminder.Parameters;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using System.Linq;
 
-namespace ChatBotReminder
+namespace Reminder.Scheduler
 {
     /// <summary>
     /// Планировщик выполняющий обработку расписания, формирующий локальный список
@@ -18,7 +18,7 @@ namespace ChatBotReminder
         private static object syncRoot = new Object();
         private static object syncTimedEvent = new Object();
 
-        // Промежуток нахождения планировщика в гибернации (интервал работы)
+        // Интервал срабатывания таймера планировщика
         private static readonly TimeSpan _timeSpan = ServiceParameters._schedulerTimeSpan;
 
         public static Scheduler Instance
@@ -39,29 +39,26 @@ namespace ChatBotReminder
         }
 
         // флаг работы планировщика
-        private bool IsActivity { get; set; } = false;
+        public bool IsActivity { get; private set; } = false;
+        // Время последнего сеанса работы
+        public TimeSpan LastActivityTime { get; private set; } = TimeSpan.Zero;
         // Дата запуска планировщика
         public DateTimeOffset StartDateTime { get; } = DateTimeOffset.Now;
         // Количество срабатываний с момента запуска
         public int ActivityCounter { get; private set; } = 0;
-        // Время последнего сеанса работы
-        public TimeSpan LastActivityTime { get; private set; } = TimeSpan.Zero;
 
         private Scheduler()
         {
         }
 
-        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        private void OnTimedEvent(object source, EventArgs e)
         {
-            Console.WriteLine("The Elapsed event was raised at {0} {1}", e.SignalTime, source?.ToString());
             DoJob();
         }
 
-        private void SetTimer(System.Timers.Timer timer)
+        private void OnTimedEvent()
         {
-            timer.Elapsed += OnTimedEvent;
-            timer.AutoReset = true;
-            timer.Enabled = true;
+            OnTimedEvent(null, EventArgs.Empty);
         }
 
         /// <summary>
@@ -69,21 +66,17 @@ namespace ChatBotReminder
         /// </summary>
         public void MainProcess()
         {
-            //DoJob();
-
+            Console.WriteLine("The application started at {0:HH:mm:ss.fff}", StartDateTime);
             using (var timer = new System.Timers.Timer(_timeSpan.TotalMilliseconds))
             {
-                SetTimer(timer);
-
+                timer.Elapsed += OnTimedEvent;
+                timer.AutoReset = true;
+                timer.Enabled = true;
+                // первый запуск обработки выполняется сразу
+                Thread immediateRunTimedEventThread = new Thread(OnTimedEvent);
+                immediateRunTimedEventThread.Start();
                 Console.WriteLine("\nPress the Enter key to exit the application...\n");
-                Console.WriteLine("The application started at {0:HH:mm:ss.fff}", StartDateTime);
-
-                Thread.Sleep(100000);
-                timer.Stop();
-
                 Console.ReadLine();
-
-                timer.Stop();
             }
         }
 
@@ -91,7 +84,6 @@ namespace ChatBotReminder
         {
             if (IsActivity)
             {
-                Console.WriteLine($"IsActivity = {IsActivity}");
                 return;
             }
 
@@ -112,20 +104,8 @@ namespace ChatBotReminder
                         CreateTaskHandler(reminderItems);
                     }
 
-                    Console.WriteLine($"ActivityCounter = {ActivityCounter}, LastActivityTime = {LastActivityTime}");
-                    Console.WriteLine();
-
-                    Thread.Sleep(7000);
-
-                    Console.WriteLine("end sleep");
-
                     stopWatch.Stop();
                     LastActivityTime = stopWatch.Elapsed;
-
-                    //Console.WriteLine("Threads.Count " + Process.GetCurrentProcess().Threads.Count.ToString());
-                    //Process[] processes = Process.GetProcesses();
-                    //processes.ToList().ForEach(item => Console.WriteLine(item));
-
                 }
                 finally
                 {
@@ -135,13 +115,10 @@ namespace ChatBotReminder
             } 
         }
 
-        public async void CreateTaskHandler(SortedSet<ReminderItem> reminderItems)
+        public void CreateTaskHandler(SortedSet<ReminderItem> reminderItems)
         {
-            TaskHandler taskHandler = new TaskHandler(reminderItems);
-            await Task.Run(taskHandler.ProcessReminders);
-
-            //Thread newThread = new Thread(taskHandler.ProcessReminders);
-            //newThread.Start();
+            Thread newThread = new Thread(taskHandler.ProcessReminders);
+            newThread.Start();
         }
 
     }

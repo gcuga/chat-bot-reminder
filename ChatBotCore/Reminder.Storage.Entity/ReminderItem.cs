@@ -16,7 +16,7 @@ namespace Reminder.Storage.Entity
     /// <value><c>_nextReminderDate</c> - следующая дата отправки, устанавливается обработчиком напоминаний</value>
     /// <value><c>isProcessing</c> - флаг забрано в обработку обработчиком</value>
     /// </summary>
-    public class ReminderItem : EntityBase, IComparable
+    public class ReminderItem : EntityBase<ReminderItem>, IComparable
     {
         private User _user;
         private Category _category;
@@ -222,7 +222,7 @@ namespace Reminder.Storage.Entity
             }
         }
 
-        public ReminderItem(ICruStorage<EntityBase> storage,
+        public ReminderItem(ICruStorage<ReminderItem> storage,
                             User user,
                             Category category,
                             bool isActive,
@@ -245,8 +245,5 @@ namespace Reminder.Storage.Entity
             _nextReminderDate = nextReminderDate;
             _isProcessing = isProcessing;
         }
-
-
-
     }
 }

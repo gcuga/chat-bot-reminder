@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ChatBotReminder
+namespace Reminder.Parameters
 {
     public static class ServiceParameters
     {
