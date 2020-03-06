@@ -1,4 +1,4 @@
-﻿namespace ChatBotReminder
+﻿namespace Reminder.Storage.Entity
 {
     public enum FrequencyTypes
     {

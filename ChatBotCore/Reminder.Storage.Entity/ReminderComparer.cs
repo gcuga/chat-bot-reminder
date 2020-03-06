@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace ChatBotReminder
+namespace Reminder.Storage.Entity
 {
     class ReminderComparer : IComparer<ReminderItem>
     {

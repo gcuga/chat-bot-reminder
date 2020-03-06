@@ -12,7 +12,7 @@ namespace ChatBotReminder
     /// Планировщик выполняющий обработку расписания, формирующий локальный список
     /// напоминаний и инициирующий процесс обработки этого списка
     /// </summary>
-    class Scheduler
+    public sealed class Scheduler
     {
         private static volatile Scheduler _instance;
         private static object syncRoot = new Object();

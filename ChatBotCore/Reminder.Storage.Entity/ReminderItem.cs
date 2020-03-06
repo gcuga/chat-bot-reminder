@@ -1,8 +1,9 @@
 ﻿using System;
+using Reminder.Storage.Core;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ChatBotReminder
+namespace Reminder.Storage.Entity
 {
     /// <summary>
     /// Напоминание.
@@ -15,9 +16,8 @@ namespace ChatBotReminder
     /// <value><c>_nextReminderDate</c> - следующая дата отправки, устанавливается обработчиком напоминаний</value>
     /// <value><c>isProcessing</c> - флаг забрано в обработку обработчиком</value>
     /// </summary>
-    class ReminderItem : IComparable
+    public class ReminderItem : EntityBase, IComparable
     {
-        private long _id;
         private User _user;
         private Category _category;
         private bool _isActive;
@@ -29,7 +29,6 @@ namespace ChatBotReminder
         private DateTimeOffset? _nextReminderDate; // возможно значение null
         private bool _isProcessing; // пока непонятно как реализовывать согласованность на всех уровнях, между потоками и в субд
 
-        public long Id { get => _id; private set => _id = value; }
         public DateTimeOffset? NextReminderDate { get => _nextReminderDate; set => _nextReminderDate = value; }
         public bool IsActive { get => _isActive; set => _isActive = value; }
         public FrequencyTypes FrequencyType { get => _frequencyType; set => _frequencyType = value; }
@@ -195,14 +194,14 @@ namespace ChatBotReminder
             ReminderItem otherReminderItem = obj as ReminderItem;
             if (otherReminderItem != null)
             {
-                if (this._id == otherReminderItem._id)
+                if (this.Id == otherReminderItem.Id)
                 {
                     return 0;
                 }
 
                 if (this._nextReminderDate == null && otherReminderItem._nextReminderDate == null)
                 {
-                    return this._id.CompareTo(otherReminderItem._id);
+                    return this.Id.CompareTo(otherReminderItem.Id);
                 }
 
                 if (otherReminderItem._nextReminderDate == null)
@@ -223,7 +222,7 @@ namespace ChatBotReminder
             }
         }
 
-        public ReminderItem(long id,
+        public ReminderItem(ICruStorage<EntityBase> storage,
                             User user,
                             Category category,
                             bool isActive,
@@ -233,9 +232,8 @@ namespace ChatBotReminder
                             string message,
                             DateTimeOffset creationDate,
                             DateTimeOffset? nextReminderDate,
-                            bool isProcessing)
+                            bool isProcessing) : base(storage)
         {
-            _id = id;
             _user = user ?? throw new ArgumentNullException(nameof(user));
             _category = category ?? throw new ArgumentNullException(nameof(category));
             _isActive = isActive;
