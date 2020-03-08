@@ -9,8 +9,7 @@ namespace Reminder.Storage.Entity
     /// Напоминание.
     /// <value><c>_isActive</c> - true напоминание активно, false неактивно</value>
     /// <value><c>_frequencyType</c> - частота напоминания, если установлено в None напоминание однократное</value>
-    /// <value><c>_dateBegin</c> - дата с которой напоминание начинает отправляться, для однократных не задается,
-    /// усекается до дня если периодичность месяц, неделя, день, усекается до часа если напоминание ежечасное</value>
+    /// <value><c>_dateBegin</c> - дата с которой напоминание начинает отправляться, для однократных не задается</value>
     /// <value><c>_dateGoal</c> - целевая дата напоминания, для бесконечно повторяющихся напоминаний не задается,
     /// время периодических напоминаний расчитывается по времени целевой даты</value>
     /// <value><c>_nextReminderDate</c> - следующая дата отправки, устанавливается обработчиком напоминаний</value>
@@ -27,7 +26,9 @@ namespace Reminder.Storage.Entity
         private string _message;
         private DateTimeOffset _creationDate;
         private DateTimeOffset? _nextReminderDate; // возможно значение null
-        private bool _isProcessing; // пока непонятно как реализовывать согласованность на всех уровнях, между потоками и в субд
+        private volatile bool _isProcessing;
+        private volatile string _threadGuid;
+        public object SyncProcessing { get; } = new object();
 
         public DateTimeOffset? NextReminderDate { get => _nextReminderDate; set => _nextReminderDate = value; }
         public bool IsActive { get => _isActive; set => _isActive = value; }
@@ -40,6 +41,7 @@ namespace Reminder.Storage.Entity
         internal User User { get => _user; set => _user = value; }
         internal Category Category { get => _category; set => _category = value; }
         public DateTimeOffset CreationDate { get => _creationDate; set => _creationDate = value; }
+        public string ThreadGuid { get => _threadGuid; set => _threadGuid = value; }
 
         public long GetUserId()
         {
@@ -229,10 +231,7 @@ namespace Reminder.Storage.Entity
                             FrequencyTypes frequencyType,
                             DateTimeOffset? dateBegin,
                             DateTimeOffset? dateGoal,
-                            string message,
-                            DateTimeOffset creationDate,
-                            DateTimeOffset? nextReminderDate,
-                            bool isProcessing) : base(storage)
+                            string message) : base(storage)
         {
             _user = user ?? throw new ArgumentNullException(nameof(user));
             _category = category ?? throw new ArgumentNullException(nameof(category));
@@ -241,9 +240,11 @@ namespace Reminder.Storage.Entity
             _dateBegin = dateBegin;
             _dateGoal = dateGoal;
             _message = message ?? throw new ArgumentNullException(nameof(message));
-            _creationDate = creationDate;
-            _nextReminderDate = nextReminderDate;
-            _isProcessing = isProcessing;
+
+            _creationDate = DateTimeOffset.Now;
+            _nextReminderDate = CalculateNextReminderDate(isActive, frequencyType, dateBegin, dateGoal, _creationDate);
+            _isProcessing = false;
+            _threadGuid = null;
         }
     }
 }

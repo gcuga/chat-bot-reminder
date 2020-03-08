@@ -1,21 +1,31 @@
-﻿using System;
+﻿using Reminder.Parameters;
+using Reminder.Storage.Core;
+using Reminder.Storage.Entity;
+using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
-namespace ChatBotReminder
+namespace Reminder.Scheduler
 {
-    class TaskHandler
+    class ReminderJob
     {
         private SortedSet<ReminderItem> ReminderItems { get; set; }
+        private ISelectableForUpdateToSortedSet<ReminderItem> Storage { get; }
 
-        public TaskHandler(SortedSet<ReminderItem> reminderItems)
+        public ReminderJob(ISelectableForUpdateToSortedSet<ReminderItem> storage)
         {
-            ReminderItems = reminderItems ?? throw new ArgumentNullException(nameof(reminderItems));
+            Storage = storage;
         }
 
-        public void ProcessReminders()
+        public void Run()
         {
+            Func<ReminderItem, bool> predicate = (item) => 
+                (!item.IsProcessing && item.IsActive &&
+                (item.NextReminderDate == null || 
+                item.NextReminderDate <= (DateTimeOffset.Now + ServiceParameters._taskHandlerTimeScope)));
+            
+            ReminderItems = Storage.SelectForUpdateSkipLocked(predicate, out string threadName);
+
             foreach (var item in ReminderItems)
             {
                 DateTimeOffset? currentNextReminderDate = item.NextReminderDate;
@@ -24,15 +34,10 @@ namespace ChatBotReminder
                     DateTimeOffset currentNextReminderDateNotNull = currentNextReminderDate.Value;
                     do
                     {
-                        DateTimeOffset processingDateWithAccuracy = DateTimeOffset.Now - ServiceParameters._taskHandlerTimeAccuracy;
-
-                        Console.WriteLine($"currentNextReminderDate = {currentNextReminderDate}\t"+
-                            $"processingDateWithAccuracy = {processingDateWithAccuracy}\t" +
-                            $"{processingDateWithAccuracy < currentNextReminderDateNotNull}");
-
+                        DateTimeOffset processingDateWithAccuracy = 
+                            DateTimeOffset.Now - ServiceParameters._taskHandlerTimeAccuracy;
                         if (processingDateWithAccuracy < currentNextReminderDateNotNull)
                         {
-                            Console.WriteLine($"sleep {currentNextReminderDateNotNull - processingDateWithAccuracy}");
                             Thread.Sleep(currentNextReminderDateNotNull - processingDateWithAccuracy);
                             continue;
                         }
@@ -42,22 +47,23 @@ namespace ChatBotReminder
                     bool isSended = SendMessage(item);
                     if (isSended)
                     {
-                        // в дальнейшем нужны будут блокировки для присвоения значений полей в item
-                        // возможно присвоение вообще через события в ReminderItem лучше делать
-                        // чтобы собрать всю логику ReminderItem внутри
-
                         item.NextReminderDate = ReminderItem.CalculateNextReminderDate(item.IsActive,
                             item.FrequencyType, item.DateBegin, item.DateGoal, currentNextReminderDateNotNull);
                         if (item.NextReminderDate == null)
                         {
-                            // если следующая дата отправки не получена, значит напоминание
-                            // нужно перевести в неактивное состояние
                             item.IsActive = false;
                         }
                     }
                 }
-            }
+                else
+                {
+                    item.IsActive = false;
+                }
 
+                item.ThreadGuid = null;
+                item.IsProcessing = false;
+                ((ICruStorage<ReminderItem>)Storage).Update(item);
+            }
         }
 
         private bool SendMessage(ReminderItem item)

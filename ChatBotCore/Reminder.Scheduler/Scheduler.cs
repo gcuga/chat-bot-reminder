@@ -1,10 +1,7 @@
 ﻿using System;
 using Reminder.Parameters;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
 
 namespace Reminder.Scheduler
 {
@@ -15,8 +12,8 @@ namespace Reminder.Scheduler
     public sealed class Scheduler
     {
         private static volatile Scheduler _instance;
-        private static object syncRoot = new Object();
-        private static object syncTimedEvent = new Object();
+        private static readonly object syncRoot = new Object();
+        private static readonly object syncTimedEvent = new Object();
 
         // Интервал срабатывания таймера планировщика
         private static readonly TimeSpan _timeSpan = ServiceParameters._schedulerTimeSpan;
@@ -53,7 +50,7 @@ namespace Reminder.Scheduler
 
         private void OnTimedEvent(object source, EventArgs e)
         {
-            DoJob();
+            StartJob();
         }
 
         private void OnTimedEvent()
@@ -66,7 +63,7 @@ namespace Reminder.Scheduler
         /// </summary>
         public void MainProcess()
         {
-            Console.WriteLine("The application started at {0:HH:mm:ss.fff}", StartDateTime);
+            Console.WriteLine("The scheduler started at {0:HH:mm:ss.fff}", StartDateTime);
             using (var timer = new System.Timers.Timer(_timeSpan.TotalMilliseconds))
             {
                 timer.Elapsed += OnTimedEvent;
@@ -75,12 +72,12 @@ namespace Reminder.Scheduler
                 // первый запуск обработки выполняется сразу
                 Thread immediateRunTimedEventThread = new Thread(OnTimedEvent);
                 immediateRunTimedEventThread.Start();
-                Console.WriteLine("\nPress the Enter key to exit the application...\n");
+                Console.WriteLine("\nPress the Enter key to stop the scheduler...\n");
                 Console.ReadLine();
             }
         }
 
-        public void DoJob()
+        public void StartJob()
         {
             if (IsActivity)
             {
@@ -95,15 +92,9 @@ namespace Reminder.Scheduler
                     ActivityCounter++;
                     Stopwatch stopWatch = new Stopwatch();
                     stopWatch.Start();
-
-
-                    SortedSet<ReminderItem> reminderItems = ReminderItemHashSet.GetReminderSet();
-                    if (reminderItems.Count > 0 )
-                    {
-                        // если список для отправки не пустой, то создаем асинхронный обработчик задания
-                        CreateTaskHandler(reminderItems);
-                    }
-
+                    ReminderJob reminderJob = new ReminderJob(ServiceParameters._storage);
+                    Thread newThread = new Thread(reminderJob.Run);
+                    newThread.Start();
                     stopWatch.Stop();
                     LastActivityTime = stopWatch.Elapsed;
                 }
@@ -112,14 +103,7 @@ namespace Reminder.Scheduler
                     IsActivity = false;
                     Monitor.Exit(syncTimedEvent);
                 }
-            } 
+            }
         }
-
-        public void CreateTaskHandler(SortedSet<ReminderItem> reminderItems)
-        {
-            Thread newThread = new Thread(taskHandler.ProcessReminders);
-            newThread.Start();
-        }
-
     }
 }

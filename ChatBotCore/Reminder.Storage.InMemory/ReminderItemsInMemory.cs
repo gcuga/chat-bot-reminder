@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using Reminder.Storage.Core;
 using Reminder.Storage.Entity;
 using System.Linq;
+using System.Threading;
 
 namespace Reminder.Storage.InMemory
 {
-    class ReminderItemsInMemory : StorageInMemoryBase<ReminderItem>, IQueryableToSortedSet<ReminderItem>
+    public class ReminderItemsInMemory : StorageInMemoryBase<ReminderItem>, ISelectableForUpdateToSortedSet<ReminderItem>
     {
         private static volatile ReminderItemsInMemory _instance;
-        private static object syncRoot = new Object();
+        private static readonly object syncRoot = new Object();
 
         public static ReminderItemsInMemory Instance
         {
@@ -37,12 +38,43 @@ namespace Reminder.Storage.InMemory
             return item.Id;
         }
 
-        public SortedSet<ReminderItem> Get(Func<ReminderItem, bool> predicate)
+        public SortedSet<ReminderItem> SelectForUpdateSkipLocked(Func<ReminderItem, bool> predicate,
+            out string threadName)
         {
-            return ReminderItems
-    .Values
-    .Where((x) => x.Status == status)
-    .ToList();
+            if (Thread.CurrentThread.Name == null)
+            {
+                Thread.CurrentThread.Name = Guid.NewGuid().ToString();
+            }
+
+            threadName = Thread.CurrentThread.Name;
+            IList<ReminderItem> processingList = base._storage
+                .Values
+                .Where(predicate)
+                .OrderBy(x => x)
+                .ToList();
+
+            SortedSet<ReminderItem> result = new SortedSet<ReminderItem>();
+            foreach (var item in processingList)
+            {
+                if (Monitor.TryEnter(item.SyncProcessing))
+                {
+                    try
+                    {
+                        if (!item.IsProcessing)
+                        {
+                            result.Add(item);
+                            item.IsProcessing = true;
+                            item.ThreadGuid = threadName;
+                        }
+                    }
+                    finally
+                    {
+                        Monitor.Exit(item.SyncProcessing);
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }

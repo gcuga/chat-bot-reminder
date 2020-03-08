@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Reminder.Storage.Core;
+using Reminder.Storage.Entity;
+using Reminder.Storage.InMemory;
+using System;
 
 namespace Reminder.Parameters
 {
@@ -18,5 +21,10 @@ namespace Reminder.Parameters
         // точность сравнения даты отправки и текущей даты для функции ожидания отправки
         // обрабатывающей список на отправку напоминаний
         public static readonly TimeSpan _taskHandlerTimeAccuracy = TimeSpan.FromMilliseconds(100);
+
+        // источник данных для выборки напоминаний
+        public static readonly ISelectableForUpdateToSortedSet<ReminderItem> _storage = 
+            ReminderItemsInMemory.Instance;
+
     }
 }

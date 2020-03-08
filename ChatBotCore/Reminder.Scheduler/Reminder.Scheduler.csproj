@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Reminder.Parameters\Reminder.Parameters.csproj" />
+    <ProjectReference Include="..\Reminder.Storage.Core\Reminder.Storage.Core.csproj" />
+    <ProjectReference Include="..\Reminder.Storage.Entity\Reminder.Storage.Entity.csproj" />
   </ItemGroup>
 
 </Project>

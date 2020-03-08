@@ -104,7 +104,7 @@ namespace ChatBotReminder
             Console.WriteLine("GetReminderSet");
 
             SortedSet<ReminderItem> reminderItems = new SortedSet<ReminderItem>();
-            DateTimeOffset now = DateTimeOffset.Now;
+            //DateTimeOffset now = DateTimeOffset.Now;
 
             // имитируем выборку поподающих в список обработки напоминаний
             foreach (var item in Reminders)
