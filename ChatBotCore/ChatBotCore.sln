@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reminder.Scheduler", "Remin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reminder.Parameters", "Reminder.Parameters\Reminder.Parameters.csproj", "{1B2A0A4B-2431-48A5-A794-A24CBBD1DF96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Storage.InMemory.Tests", "Reminder.Storage.InMemory.Tests\Reminder.Storage.InMemory.Tests.csproj", "{179A231A-11EF-416D-9C7F-81213FA8A8C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reminder.Storage.InMemory.Tests", "Reminder.Storage.InMemory.Tests\Reminder.Storage.InMemory.Tests.csproj", "{179A231A-11EF-416D-9C7F-81213FA8A8C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Storage.Entity.Tests", "Reminder.Storage.Entity.Tests\Reminder.Storage.Entity.Tests.csproj", "{73219B5D-9DCB-495D-841B-E4047DC26364}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{179A231A-11EF-416D-9C7F-81213FA8A8C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{179A231A-11EF-416D-9C7F-81213FA8A8C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{179A231A-11EF-416D-9C7F-81213FA8A8C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73219B5D-9DCB-495D-841B-E4047DC26364}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73219B5D-9DCB-495D-841B-E4047DC26364}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73219B5D-9DCB-495D-841B-E4047DC26364}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73219B5D-9DCB-495D-841B-E4047DC26364}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

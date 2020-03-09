@@ -1,8 +1,4 @@
-﻿using System;
-using Reminder.Parameters;
-using Reminder.Storage;
-using Reminder.Scheduler;
-using System.Threading;
+﻿using Reminder.Scheduler;
 
 namespace Reminder.App
 {

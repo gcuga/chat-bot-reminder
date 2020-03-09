@@ -63,7 +63,7 @@ namespace Reminder.Scheduler
         /// </summary>
         public void MainThread()
         {
-            Console.WriteLine("The scheduler started at {0:HH:mm:ss.fff}", StartDateTime);
+            Console.WriteLine("The scheduler started at {0:dd.MM.yyyy HH:mm:ss zzz}", StartDateTime);
             using (var timer = new System.Timers.Timer(_timeSpan.TotalMilliseconds))
             {
                 timer.Elapsed += OnTimedEvent;
