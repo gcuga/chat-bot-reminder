@@ -9,16 +9,16 @@ namespace Reminder.Scheduler
     /// Планировщик выполняющий обработку расписания, формирующий локальный список
     /// напоминаний и инициирующий процесс обработки этого списка
     /// </summary>
-    public sealed class Scheduler
+    public sealed class ReminderScheduler
     {
-        private static volatile Scheduler _instance;
+        private static volatile ReminderScheduler _instance;
         private static readonly object syncRoot = new Object();
         private static readonly object syncTimedEvent = new Object();
 
         // Интервал срабатывания таймера планировщика
         private static readonly TimeSpan _timeSpan = ServiceParameters._schedulerTimeSpan;
 
-        public static Scheduler Instance
+        public static ReminderScheduler Instance
         {
             get
             {
@@ -27,7 +27,7 @@ namespace Reminder.Scheduler
                     lock (syncRoot)
                     {
                         if (_instance == null)
-                            _instance = new Scheduler();
+                            _instance = new ReminderScheduler();
                     }
                 }
 
@@ -44,7 +44,7 @@ namespace Reminder.Scheduler
         // Количество срабатываний с момента запуска
         public int ActivityCounter { get; private set; } = 0;
 
-        private Scheduler()
+        private ReminderScheduler()
         {
         }
 
@@ -61,7 +61,7 @@ namespace Reminder.Scheduler
         /// <summary>
         /// Основной процесс планировщика
         /// </summary>
-        public void MainProcess()
+        public void MainThread()
         {
             Console.WriteLine("The scheduler started at {0:HH:mm:ss.fff}", StartDateTime);
             using (var timer = new System.Timers.Timer(_timeSpan.TotalMilliseconds))
@@ -74,6 +74,8 @@ namespace Reminder.Scheduler
                 immediateRunTimedEventThread.Start();
                 Console.WriteLine("\nPress the Enter key to stop the scheduler...\n");
                 Console.ReadLine();
+                Console.WriteLine("\nThe scheduler is stopped,\n"+
+                    "the application will be completed upon completion of the running threads.\n");
             }
         }
 

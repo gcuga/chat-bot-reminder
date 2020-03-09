@@ -26,6 +26,18 @@ namespace Reminder.Scheduler
             
             ReminderItems = Storage.SelectForUpdateSkipLocked(predicate, out string threadName);
 
+
+            Console.WriteLine();
+            Console.WriteLine($"SortedSet in thread:  {threadName} \t Now: {DateTimeOffset.Now:HH:mm:ss fff}");
+            foreach (var r in ReminderItems)
+            {
+                Console.WriteLine($"{r.Id}\t{r.NextReminderDate:HH:mm:ss}\t{r.ThreadGuid}\t{r.Message}");
+            }
+            Console.WriteLine();
+
+
+
+
             foreach (var item in ReminderItems)
             {
                 DateTimeOffset? currentNextReminderDate = item.NextReminderDate;
@@ -47,8 +59,13 @@ namespace Reminder.Scheduler
                     bool isSended = SendMessage(item);
                     if (isSended)
                     {
-                        item.NextReminderDate = ReminderItem.CalculateNextReminderDate(item.IsActive,
-                            item.FrequencyType, item.DateBegin, item.DateGoal, currentNextReminderDateNotNull);
+                        item.NextReminderDate = ReminderItem.CalculateNextReminderDate(
+                            item.IsActive,
+                            item.FrequencyType, 
+                            item.DateBegin, 
+                            item.DateGoal, 
+                            currentNextReminderDateNotNull);
+
                         if (item.NextReminderDate == null)
                         {
                             item.IsActive = false;
@@ -69,9 +86,9 @@ namespace Reminder.Scheduler
         private bool SendMessage(ReminderItem item)
         {
             // вызов отправщика сообщений
-            Console.WriteLine($"Send remainder {item.Id}\t {item.GetCategoryName()}\t {item.Message}" +
-                $" \t{item.FrequencyType} \tcurrent NextReminderDate = {item.NextReminderDate}\t date goal {item.DateGoal}");
-            Console.WriteLine();
+            ReminderItem r = item;
+            Console.WriteLine($"Send remainder {r.Id}\t{r.NextReminderDate:HH:mm:ss}\t{r.ThreadGuid}\t{r.Message}"+
+                $"\tNow {DateTimeOffset.Now:HH:mm:ss}");
             return true;
         }
     }

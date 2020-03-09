@@ -69,7 +69,7 @@ namespace Reminder.Storage.Entity
                 return nextReminderDate;
             }
 
-            if (dateGoal != null && compareWithDate > dateGoal)
+            if (dateGoal != null && compareWithDate >= dateGoal)
             {
                 // целевая дата уже прошла, новой даты следующей отправки нет
                 return nextReminderDate;
