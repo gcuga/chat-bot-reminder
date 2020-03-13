@@ -14,7 +14,7 @@ namespace Reminder.Storage.InMemory.Tests
 			// prepare test data
 			string userName = "Test Method_Insert_With_Not_Null_Item_Should_Store_The_Item_Internally";
 			var storage = UsersInMemory.Instance;
-			var expected = new User(storage, userName);
+			var expected = new User(storage, userName, "2223322");
 
 			// do the test
 			storage.Insert(expected);
@@ -45,7 +45,7 @@ namespace Reminder.Storage.InMemory.Tests
 			// prepare test data
 			string userName = "Test  Method_Get_By_Id_Should_Return_Not_Null_For_Existing_Item_In_Storage";
 			var storage = UsersInMemory.Instance;
-			var expected = new User(storage, userName);
+			var expected = new User(storage, userName, "2223322");
 			storage._storage.Add(expected.Id, expected);
 
 			// do the test
@@ -73,7 +73,7 @@ namespace Reminder.Storage.InMemory.Tests
 			// prepare test data
 			string userName = "Test Method_TryGet_By_Id_Should_Return_True_And_Not_Null_As_Out_For_Existing_Item_In_Storage";
 			var storage = UsersInMemory.Instance;
-			var expected = new User(storage, userName);
+			var expected = new User(storage, userName, string.Empty);
 			storage._storage.Add(expected.Id, expected);
 
 			// act & assert

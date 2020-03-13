@@ -61,7 +61,7 @@ namespace Reminder.Scheduler
         /// <summary>
         /// Основной процесс планировщика
         /// </summary>
-        public void MainThread()
+        public void Run()
         {
             Console.WriteLine("The scheduler started at {0:dd.MM.yyyy HH:mm:ss zzz}", StartDateTime);
             using (var timer = new System.Timers.Timer(_timeSpan.TotalMilliseconds))
@@ -94,7 +94,7 @@ namespace Reminder.Scheduler
                     ActivityCounter++;
                     Stopwatch stopWatch = new Stopwatch();
                     stopWatch.Start();
-                    ReminderJob reminderJob = new ReminderJob(ServiceParameters._storage);
+                    ReminderJob reminderJob = new ReminderJob(ServiceParameters._storage, ServiceParameters._sender);
                     Thread newThread = new Thread(reminderJob.Run);
                     newThread.Start();
                     stopWatch.Stop();

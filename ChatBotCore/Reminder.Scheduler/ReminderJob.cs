@@ -1,4 +1,5 @@
 ﻿using Reminder.Parameters;
+using Reminder.Sender.Core;
 using Reminder.Storage.Core;
 using Reminder.Storage.Entity;
 using System;
@@ -11,10 +12,14 @@ namespace Reminder.Scheduler
     {
         private SortedSet<ReminderItem> ReminderItems { get; set; }
         private ISelectableForUpdateToSortedSet<ReminderItem> Storage { get; }
+        private IReminderSender Sender { get; }
 
-        public ReminderJob(ISelectableForUpdateToSortedSet<ReminderItem> storage)
+        public ReminderJob(
+            ISelectableForUpdateToSortedSet<ReminderItem> storage,
+            IReminderSender sender)
         {
             Storage = storage;
+            Sender = sender;
         }
 
         public void Run()
@@ -44,9 +49,10 @@ namespace Reminder.Scheduler
                 if (currentNextReminderDate != null)
                 {
                     DateTimeOffset currentNextReminderDateNotNull = currentNextReminderDate.Value;
+                    item.LastSendingError = null;
                     do
                     {
-                        DateTimeOffset processingDateWithAccuracy = 
+                        DateTimeOffset processingDateWithAccuracy =
                             DateTimeOffset.Now - ServiceParameters._taskHandlerTimeAccuracy;
                         if (processingDateWithAccuracy < currentNextReminderDateNotNull)
                         {
@@ -56,40 +62,69 @@ namespace Reminder.Scheduler
                         break;
                     } while (true);
 
-                    bool isSended = SendMessage(item);
-                    if (isSended)
-                    {
-                        item.NextReminderDate = ReminderItem.CalculateNextReminderDate(
-                            item.IsActive,
-                            item.FrequencyType, 
-                            item.DateBegin, 
-                            item.DateGoal, 
-                            currentNextReminderDateNotNull);
-
-                        if (item.NextReminderDate == null)
-                        {
-                            item.IsActive = false;
-                        }
-                    }
+                    // отправка сообщения в фоновом потоке
+                    Thread backgroundThread =
+                        new Thread(new ThreadStart(() => { SendMessage(item); }));
+                    backgroundThread.IsBackground = true;
+                    backgroundThread.Start();
                 }
                 else
                 {
                     item.IsActive = false;
+                    item.ThreadGuid = null;
+                    item.IsProcessing = false;
+                    ((ICruStorage<ReminderItem>)Storage).Update(item);
                 }
-
-                item.ThreadGuid = null;
-                item.IsProcessing = false;
-                ((ICruStorage<ReminderItem>)Storage).Update(item);
             }
         }
 
-        private bool SendMessage(ReminderItem item)
+        private void SendMessage(ReminderItem item)
         {
-            // вызов отправщика сообщений
-            ReminderItem r = item;
-            Console.WriteLine($"Send remainder {r.Id}\t{r.NextReminderDate:HH:mm:ss}\t{r.ThreadGuid}\t{r.Message}"+
-                $"\tNow {DateTimeOffset.Now:HH:mm:ss}");
-            return true;
+            SendingResultTypes sendingResult = SendingResultTypes.Failed;
+            AggregateException aggregateException = null;
+            Exception exception = null;
+            try
+            {
+                (sendingResult, aggregateException) = Sender.Send(item.GetChatId(), item.Message);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+
+            if (exception == null && aggregateException == null && 
+                (sendingResult == SendingResultTypes.Success || sendingResult == SendingResultTypes.WrongText))
+            {
+                // WrongText пока не отрабатывается никак
+                item.NextReminderDate = ReminderItem.CalculateNextReminderDate(
+                    item.IsActive,
+                    item.FrequencyType,
+                    item.DateBegin,
+                    item.DateGoal,
+                    item.NextReminderDate??DateTimeOffset.Now);
+
+                if (item.NextReminderDate == null)
+                {
+                    item.IsActive = false;
+                }
+                item.ThreadGuid = null;
+                item.IsProcessing = false;
+            }
+            else
+            {
+                item.ThreadGuid = null;
+                item.IsProcessing = false;
+                item.LastSendingError =
+                    $"{nameof(sendingResult)}: {sendingResult}\t" +
+                    $"{nameof(aggregateException)}: {aggregateException?.Message??"None"}\t" +
+                    $"{nameof(exception)}: {exception?.Message??"None"}";
+            }
+
+            ((ICruStorage<ReminderItem>)Storage).Update(item);
+
+            //ReminderItem r = item;
+            //Console.WriteLine($"Send remainder {r.Id}\t{r.NextReminderDate:HH:mm:ss}\t{r.ThreadGuid}\t{r.Message}"+
+            //    $"\tNow {DateTimeOffset.Now:HH:mm:ss}");
         }
     }
 }

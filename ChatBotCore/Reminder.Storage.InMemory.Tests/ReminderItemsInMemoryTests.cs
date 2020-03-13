@@ -17,7 +17,7 @@ namespace Reminder.Storage.InMemory.Tests
             userStorage._storage.Clear();
             categoryStorage._storage.Clear();
             reminderStorage._storage.Clear();
-            User user = new User(userStorage, "User");
+            User user = new User(userStorage, "User", "2223322");
             Category category = new Category(categoryStorage, "Category");
             ReminderItem expectedReminder1 = new ReminderItem(
                 storage: reminderStorage,

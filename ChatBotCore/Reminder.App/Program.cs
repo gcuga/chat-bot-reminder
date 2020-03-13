@@ -1,4 +1,5 @@
-﻿using Reminder.Scheduler;
+﻿using Reminder.Receiver.Domain;
+using Reminder.Scheduler;
 
 namespace Reminder.App
 {
@@ -6,10 +7,13 @@ namespace Reminder.App
     {
         static void Main(string[] args)
         {
-            TestDataInMemory.Populate();
+            //TestDataInMemory.Populate();
+
+            ReceiverDomain receiverDomain = new ReceiverDomain();
+            receiverDomain.Run();
 
             ReminderScheduler scheduler = ReminderScheduler.Instance;
-            scheduler.MainThread();
+            scheduler.Run();
         }
     }
 }

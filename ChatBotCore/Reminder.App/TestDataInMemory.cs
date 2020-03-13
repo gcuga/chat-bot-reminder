@@ -14,7 +14,7 @@ namespace Reminder.App
             CategoriesInMemory categoryStorage = CategoriesInMemory.Instance;
             ReminderItemsInMemory reminderStorage = ReminderItemsInMemory.Instance;
 
-            User user = new User(userStorage, "User");
+            User user = new User(userStorage, "@DNReminderBot", "967061336");
             Category category = new Category(categoryStorage, "Мероприятия");
 
             reminderStorage.Insert(new ReminderItem(

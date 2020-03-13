@@ -42,10 +42,16 @@ namespace Reminder.Storage.Entity
         internal Category Category { get => _category; set => _category = value; }
         public DateTimeOffset CreationDate { get => _creationDate; set => _creationDate = value; }
         public string ThreadGuid { get => _threadGuid; set => _threadGuid = value; }
+        public string LastSendingError { get; set; }
 
         public long GetUserId()
         {
             return _user.Id;
+        }
+
+        public string GetChatId()
+        {
+            return _user.ChatId;
         }
 
         public string GetCategoryName()
